@@ -1,0 +1,8 @@
+Telicent Extract Release Notes Action
+=====================================
+
+A GitHub Action that automates the extraction of release notes from
+a repositories Change Log file for use in later build steps.
+
+Copyright (C) 2024 Telicent Ltd
+

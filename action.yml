@@ -1,0 +1,106 @@
+name: Release Note Extraction
+description: |
+  This action extracts release notes for a given version from the Change Log file in the repository.
+author: Telicent
+branding:
+  icon: 'log-in'
+  color: 'orange'
+inputs:
+  changelog-file:
+    required: false
+    default: CHANGELOG.md
+    description: |
+      Specifies the Change Log file from which release notes will be extracted.
+
+      If an empty string is provided then the Change Log release note extraction is skipped.
+  version:
+    required: true
+    description: |
+      Specifies the version for which release notes should be extracted.
+  release-notes-file:
+    required: false
+    default: release-notes.txt
+    description: |
+      Specifies the file to which the extracted release notes are written
+  fail-if-missing:
+    required: false
+    default: "false"
+    description: |
+      Specifies whether the action should fail if release notes can't be extracted from the Change Log file.
+
+      Note that this does not have an effect if Change Log release note extraction is disabled by setting
+      `changelog-file` to an empty string.
+  attach-release-notes:
+    required: false
+    default: "false"
+    description: |
+      Specifies whether the release notes should be attached to the workflow run as a build artifact using
+      actions/upload-artifact
+outputs:
+  release-notes-file:
+    value: ${{ steps.changelog.outputs.release-notes-file }}
+    description: |
+      Provides the path to the extracted release notes file.  This is identical to the `release-notes-file` input
+      **UNLESS**:
+      
+      - Change log release note extraction was disabled by setting the `changelog-file` input to an empty string
+      - Change log release note extraction failed and `fail-if-missing` was set to `true`
+  auto-release-notes:
+    value: ${{ steps.auto.outputs.enabled }}
+    description: |
+      Whether automatic release note generation was detected as being enabled for this repository.
+runs:
+  using: "composite"  
+  steps:
+    - name: Change Log Release Note Extraction
+      id: changelog
+      shell: bash
+      if: ${{ inputs.changelog-file != '' }}
+      run: |
+        RELEASE="${{ inputs.version }}"
+        STARTED=0
+        while IFS= read -r LINE; do
+          if [ ${STARTED} -eq 1 ]; then
+            if [[ "${LINE}" == \#* ]]; then
+              break
+            fi
+            echo "${LINE}" >> ${{ inputs.release-notes-file }}
+          elif [[ "${LINE}" == \#*${RELEASE} ]]; then
+            STARTED=1
+            echo "# Version ${RELEASE}" >> ${{ inputs.release-notes-file }}
+          fi
+        done < "${{ inputs.changelog-file }}"
+        
+        if [ ${STARTED} -eq 0 ]; then
+          if [ "${{ inputs.fail-if-missing }}" == "true" ]; then
+            echo "Release ${RELEASE} not found in ${{ inputs.changelog-file }}" 1>&2
+            exit 1
+          fi
+          echo "Release ${RELEASE} not found in ${{ inputs.changelog-file }}, no Change Log based release notes available" 1>&2
+          echo "# Version ${RELEASE}" >> ${{ inputs.release-notes-file }}
+        else
+          echo "Detected Release Notes for ${RELEASE} are:"
+          cat release-notes.txt
+        fi
+        echo "release-notes-file=${{ inputs.release-notes-file }}" >> "${GITHUB_OUTPUT}"
+        exit 0
+
+    - name: Detect whether GitHub Automatic Release Notes are enabled
+      id: auto
+      shell: bash
+      run: |
+        if [ -f ".github/release.yml" ]; then
+          echo "Using GitHub Automated Release Notes in addition to Change Log release notes"
+          echo "enabled=true" >> ${GITHUB_OUTPUT}
+        else
+          echo "Using Change Log release notes only"
+          echo "enabled=false" >> ${GITHUB_OUTPUT}
+        fi
+
+    - name: Upload Extracted Release Notes
+      if: ${{ inputs.attach-release-notes == 'true' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.release-notes-file }}
+        path: ${{ inputs.release-notes-file }}
+
