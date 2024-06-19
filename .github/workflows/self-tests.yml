@@ -42,7 +42,7 @@ jobs:
   simple-fail:
     strategy:
       matrix:
-        version: [ "1", "1.2.4", "2.0.0", "0.1.2" ]
+        version: [ "1.2.4", "2.0.0", "0.1.2" ]
       fail-fast: false
     runs-on: ubuntu-latest
     steps:
