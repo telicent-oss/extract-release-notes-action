@@ -10,12 +10,12 @@ jobs:
   simple-success:
     strategy:
       matrix:
-        version: [ "1.0.0", "1.2", "1.2.1", "1.2.2", "1.2.3", "1.2.4" ]
+        version: [ "1.0.0", "1.2", "1.2.1", "1.2.2", "1.2.3" ]
       fail-fast: false
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Extract Release Notes
         id: extract
@@ -38,3 +38,29 @@ jobs:
       - name: Add release notes to job summary
         run: |
           cat "${{ steps.extract.outputs.release-notes-file }}" >> "${GITHUB_STEP_SUMMARY}"
+
+  simple-fail:
+    strategy:
+      matrix:
+        version: [ "1", "1.2.4", "2.0.0", "0.1.2" ]
+      fail-fast: false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract Release Notes
+        id: extract
+        uses: rvesse/extract-release-notes-action@v1
+        continue-on-error: true
+        with:
+          changelog-file: test-data/simple.md
+          version: ${{ matrix.version }}
+          fail-if-missing: true
+
+      - name: Verify Release Note Extraction Failed
+        if: ${{ steps.extract.outcome == 'success' }}
+        run: |
+          echo "Release Note Extraction should have failed"
+          exit 1
+
