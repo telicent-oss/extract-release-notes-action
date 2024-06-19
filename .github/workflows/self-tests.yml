@@ -15,8 +15,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Extract Release Notes
+        id: extract
         uses: rvesse/extract-release-notes-action@v1
         with:
           changelog-file: test-data/simple.md
           version: ${{ matrix.version }}
           fail-if-missing: true
+
+      - name: Fail if no release notes output
+        if: ${{ steps.extract.outputs.release-notes-file }}
+        run: |
+          exit 1
+
+      - name: Add release notes to job summary
+        run: |
+          cat "${{ steps.extract.outputs.release-notes-file }}" >> "${GITHUB_STEP_SUMMARY}"
