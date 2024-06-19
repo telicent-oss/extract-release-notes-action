@@ -1,0 +1,22 @@
+name: Action Self-Tests
+on:
+  push:
+    branches:
+      - "**"
+    tags:
+      - "**"
+  workflow_dispatch:
+jobs:
+  simple-success:
+    strategy:
+      matrix:
+        version: [ "1.0.0", "1.2", "1.2.1", "1.2.2", "1.2.3", "1.2.4" ]
+      fail-fast: false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract Release Notes
+        uses: rvesse/extract-release-notes-action@v1
+        with:
+          changelog-file: test-data/simple.md
+          version: ${{ matrix.version }}
+          fail-if-missing: true
