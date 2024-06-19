@@ -14,6 +14,9 @@ jobs:
       fail-fast: false
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        
       - name: Extract Release Notes
         id: extract
         uses: rvesse/extract-release-notes-action@v1
