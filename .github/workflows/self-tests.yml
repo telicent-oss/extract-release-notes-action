@@ -16,7 +16,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        
+
       - name: Extract Release Notes
         id: extract
         uses: rvesse/extract-release-notes-action@v1
@@ -25,8 +25,13 @@ jobs:
           version: ${{ matrix.version }}
           fail-if-missing: true
 
+      - name: Print Outputs for Debugging
+        run: |
+          echo "Release Notes file is ${{ steps.extract.outputs.release-notes-file }}"
+          echo "Auto-Release notes set to ${{ steps.extract.outputs.auto-release-notes }}"
+
       - name: Fail if no release notes output
-        if: ${{ steps.extract.outputs.release-notes-file }}
+        if: ${{ steps.extract.outputs.release-notes-file == '' }}
         run: |
           exit 1
 
