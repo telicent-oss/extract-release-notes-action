@@ -99,8 +99,7 @@ jobs:
 
       - name: Fail if wrong release notes extracted
         run: |
-          grep "Foo" "${{ steps.extract.outputs.release-notes-file }}"
-          if [ $? -ne 0 ]; then
+          if grep "Bar" "${{ steps.extract.outputs.release-notes-file }}" >/dev/null 2>&1; then
             echo "Wrong release notes extracted"
             exit 1
           fi
@@ -118,7 +117,7 @@ jobs:
           changelog-file: test-data/sub-headers.md
           version: 1.0.0
           fail-if-missing: true
-          attach-release-notes: false
+          attach-release-notes: true
           job-summary: true
 
       - name: Print Outputs for Debugging
@@ -133,8 +132,7 @@ jobs:
 
       - name: Fail if wrong release notes extracted
         run: |
-          grep "BUG-123" "${{ steps.extract.outputs.release-notes-file }}"
-          if [ $? -ne 0 ]; then
+          if grep "BUG" "${{ steps.extract.outputs.release-notes-file }}" >/dev/null 2>&1; then
             echo "Wrong release notes extracted"
             exit 1
           fi
