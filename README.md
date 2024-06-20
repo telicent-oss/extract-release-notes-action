@@ -135,3 +135,8 @@ Thus, if you use subheaders within your Change Log only the first portion of the
 currently be extracted.
 
 [GitHubAutoRelease]: https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes
+
+# Copyright and License
+
+This action is Copyright Telicent Ltd and licensed under the Apache License 2.0, see [LICENSE](LICENSE) and
+[NOTICE](NOTICE)
