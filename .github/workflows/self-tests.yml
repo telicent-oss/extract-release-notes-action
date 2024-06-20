@@ -237,3 +237,28 @@ jobs:
           echo "Release Note Extraction should have failed"
           exit 1
 
+  year-style:
+    strategy:
+      matrix:
+        version: [ "2024", "202406", "2024062", "20.40.20" ]
+      fail-fast: false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract Release Notes
+        id: extract
+        uses: telicent-oss/extract-release-notes-action@v1
+        continue-on-error: true
+        with:
+          changelog-file: test-data/year-style.md
+          version: ${{ matrix.version }}
+          fail-if-missing: true
+          job-summary: false
+
+      - name: Verify Release Note Extraction Failed
+        if: ${{ steps.extract.outcome == 'success' }}
+        run: |
+          echo "Release Note Extraction should have failed"
+          exit 1

@@ -126,13 +126,16 @@ In order to find the release notes for a release it looks for a line starting wi
 by some space characters, followed by the specified input `version` and then a new line character.
 
 For example if `version` was set to `1.2.3` then both `# 1.2.3` and `### 1.2.3` would be acceptable, but `## 1.2.3.0`
-would not.  Similarly, if your Change Log file has headers like `### Version 1.2.3` then this won't match either.
+would not.  Similarly, if your Change Log file has headers like `### Version 1.2.3` then this won't match either.  As of
+`v1.1` of this action we also support more complex headers of the form `### [1.2.3]<additional content>` where
+`<additional content>` is anything else.  Again your input `version` must appear exactly within the brackets to be
+successfully matched.
 
-Once this line is found it then reads all the subsequent lines until the end of file is reached, or another
-header line, any line starting with a `#` character, is reached.
-
-Thus, if you use subheaders within your Change Log only the first portion of the release notes from your release will
-currently be extracted.
+Once this line is found it then reads all the subsequent lines until the end of file is reached, or another header line
+of the same level is reached.  This means that you can use subheaders in your Change Log provided that the subheader
+uses more `#` characters than the header for your version.  So if your header is `## 1.2.3` then any subheaders must use
+three or more `#` characters e.g. `### Bug Fixes` would be acceptable but `## Bug Fixes` would be treated as the end of
+your versions release notes.
 
 [GitHubAutoRelease]: https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes
 
