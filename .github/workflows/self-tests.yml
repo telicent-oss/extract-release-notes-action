@@ -31,11 +31,18 @@ jobs:
         run: |
           echo "Release Notes file is ${{ steps.extract.outputs.release-notes-file }}"
           echo "Auto-Release notes set to ${{ steps.extract.outputs.auto-release-notes }}"
+          echo "Release Notes artifact is ${{ steps.extract.outputs.release-notes-artifact }}"
 
       - name: Fail if no release notes output
         if: ${{ steps.extract.outputs.release-notes-file == '' }}
         run: |
           exit 1
+
+      - name: Ensure Release Notes can be downloaded
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ steps.extract.outputs.release-notes-artifact }}
+          path: /tmp/
 
   simple-fail:
     strategy:
@@ -83,6 +90,7 @@ jobs:
         run: |
           echo "Release Notes file is ${{ steps.extract.outputs.release-notes-file }}"
           echo "Auto-Release notes set to ${{ steps.extract.outputs.auto-release-notes }}"
+          echo "Release Notes artifact is ${{ steps.extract.outputs.release-notes-artifact }}"
 
       - name: Fail if no release notes output
         if: ${{ steps.extract.outputs.release-notes-file == '' }}
@@ -92,6 +100,40 @@ jobs:
       - name: Fail if wrong release notes extracted
         run: |
           grep "Foo" "${{ steps.extract.outputs.release-notes-file }}"
+          if [ $? -ne 0 ]; then
+            echo "Wrong release notes extracted"
+            exit 1
+          fi
+
+  sub-headers:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract Release Notes
+        id: extract
+        uses: rvesse/extract-release-notes-action@v1
+        with:
+          changelog-file: test-data/sub-headers.md
+          version: 1.0.0
+          fail-if-missing: true
+          attach-release-notes: false
+          job-summary: true
+
+      - name: Print Outputs for Debugging
+        run: |
+          echo "Release Notes file is ${{ steps.extract.outputs.release-notes-file }}"
+          echo "Auto-Release notes set to ${{ steps.extract.outputs.auto-release-notes }}"
+
+      - name: Fail if no release notes output
+        if: ${{ steps.extract.outputs.release-notes-file == '' }}
+        run: |
+          exit 1
+
+      - name: Fail if wrong release notes extracted
+        run: |
+          grep "BUG-123" "${{ steps.extract.outputs.release-notes-file }}"
           if [ $? -ne 0 ]; then
             echo "Wrong release notes extracted"
             exit 1

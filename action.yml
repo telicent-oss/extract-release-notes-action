@@ -63,6 +63,11 @@ outputs:
       
       - Change log release note extraction was disabled by setting the `changelog-file` input to an empty string
       - Change log release note extraction failed and `fail-if-missing` was set to `true`
+  release-notes-artifact:
+    value: ${{ github.job }}-release-notes-${{ inputs.version }}${{ inputs.attachment-suffix }}
+    description: |
+      Provides the name of the uploaded release notes artifact, this will only exist if the `attach-release-notes` input
+      was set to `true`
   auto-release-notes:
     value: ${{ steps.auto.outputs.enabled }}
     description: |
