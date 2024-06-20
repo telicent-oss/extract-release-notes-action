@@ -40,7 +40,7 @@ jobs:
   simple-fail:
     strategy:
       matrix:
-        version: [ "1.2.4", "2.0.0", "0.1.2" ]
+        version: [ "1", "1.0", "1.2.4", "2.0.0", "0.1.2" ]
       fail-fast: false
     runs-on: ubuntu-latest
     steps:
@@ -97,37 +97,4 @@ jobs:
             exit 1
           fi
 
-  partial-match:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Extract Release Notes
-        id: extract
-        uses: rvesse/extract-release-notes-action@v1
-        with:
-          changelog-file: test-data/simple.md
-          version: 1 # Not a complete version number so we'll get partial matching happening
-          fail-if-missing: true
-          attach-release-notes: true
-          job-summary: true
-
-      - name: Print Outputs for Debugging
-        run: |
-          echo "Release Notes file is ${{ steps.extract.outputs.release-notes-file }}"
-          echo "Auto-Release notes set to ${{ steps.extract.outputs.auto-release-notes }}"
-
-      - name: Fail if no release notes output
-        if: ${{ steps.extract.outputs.release-notes-file == '' }}
-        run: |
-          exit 1
-
-      - name: Fail if wrong release notes extracted
-        run: |
-          grep "cool" "${{ steps.extract.outputs.release-notes-file }}"
-          if [ $? -ne 0 ]; then
-            echo "Wrong release notes extracted"
-            exit 1
-          fi
 
