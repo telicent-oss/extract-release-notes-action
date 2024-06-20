@@ -82,14 +82,19 @@ runs:
       run: |
         RELEASE="${{ inputs.version }}"
         STARTED=0
+        HEADER=""
         while IFS= read -r LINE; do
           if [ ${STARTED} -eq 1 ]; then
             if [[ "${LINE}" == \#* ]]; then
-              break
+              SUB_HEADER=$(echo "${LINE}" | awk '{print $1}')
+              if [ "${#SUB_HEADER}" -le "${#HEADER}" ]; then
+                break
+              fi
             fi
             echo "${LINE}" >> ${{ inputs.release-notes-file }}
-          elif echo "${LINE}" | grep -E "#+[[:space:]]+${RELEASE}\$" >/dev/null 2>&1; then
+          elif echo "${LINE}" | grep -E "#+[[:space:]]+([[]${RELEASE}[]].*|${RELEASE}\$)" >/dev/null 2>&1; then
             STARTED=1
+            HEADER=$(echo "${LINE}" | awk '{print $1}')
             echo "# Version ${RELEASE}" >> ${{ inputs.release-notes-file }}
           fi
         done < "${{ inputs.changelog-file }}"

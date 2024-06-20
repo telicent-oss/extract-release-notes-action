@@ -130,10 +130,10 @@ jobs:
         run: |
           exit 1
 
-      - name: Fail if wrong release notes extracted
+      - name: Fail if sub-header content is not extracted
         run: |
-          if grep "BUG" "${{ steps.extract.outputs.release-notes-file }}" >/dev/null 2>&1; then
-            echo "Wrong release notes extracted"
+          if ! grep "BUG" "${{ steps.extract.outputs.release-notes-file }}" >/dev/null 2>&1; then
+            echo "Failed to extract sub-header content"
             exit 1
           fi
         
@@ -174,5 +174,66 @@ jobs:
             exit 1
           fi
 
+  complex-success:
+    strategy:
+      matrix:
+        version: [ "1.0.0", "0.9.0" ]
+      fail-fast: false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
+      - name: Extract Release Notes
+        id: extract
+        uses: telicent-oss/extract-release-notes-action@v1
+        with:
+          changelog-file: test-data/complex.md
+          version: ${{ matrix.version }}
+          fail-if-missing: true
+          attach-release-notes: true
+          job-summary: true
+
+      - name: Print Outputs for Debugging
+        run: |
+          echo "Release Notes file is ${{ steps.extract.outputs.release-notes-file }}"
+          echo "Auto-Release notes set to ${{ steps.extract.outputs.auto-release-notes }}"
+          echo "Release Notes artifact is ${{ steps.extract.outputs.release-notes-artifact }}"
+
+      - name: Fail if no release notes output
+        if: ${{ steps.extract.outputs.release-notes-file == '' }}
+        run: |
+          exit 1
+
+      - name: Ensure Release Notes can be downloaded
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ steps.extract.outputs.release-notes-artifact }}
+          path: /tmp/
+
+  complex-fail:
+    strategy:
+      matrix:
+        version: [ "1", "1.0", "2.0.0", "0.1.2" ]
+      fail-fast: false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract Release Notes
+        id: extract
+        uses: telicent-oss/extract-release-notes-action@v1
+        continue-on-error: true
+        with:
+          changelog-file: test-data/complex.md
+          version: ${{ matrix.version }}
+          fail-if-missing: true
+          job-summary: false
+
+      - name: Verify Release Note Extraction Failed
+        if: ${{ steps.extract.outcome == 'success' }}
+        run: |
+          echo "Release Note Extraction should have failed"
+          exit 1
 
