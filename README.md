@@ -4,8 +4,12 @@ This repository provides a GitHub Action that tries to automatically extract rel
 Log file, e.g. `CHANGELOG.md`, or automatically using [GitHub's automatic release notes][GitHubAutoRelease]
 functionality.
 
-It produces two outputs, a `string` with a path to a file containing the extracted release notes (if any), and a
-`boolean` indicating whether automatic release note generation has been configured.
+You can optionally fail the build if no release notes can be extracted using the [`fail-if-missing`](#inputs) input.
+
+It produces several [outputs](#outputs) detailing the availability of release notes, the release notes get written to a
+local file in the workspace by default, but can be optionally uploaded as a build artifact by setting the
+[`attach-release-notes`](#inputs) to `true` to enable sharing the extracted release notes between multiple jobs in a
+workflow.
 
 # Requirements
 
@@ -19,6 +23,8 @@ At its most basic the action is used as follows:
 name: Extract Release Notes Example
 on: 
   push:
+    tags:
+      - '**'
   workflow_dispatch:
 
 jobs:
@@ -33,13 +39,59 @@ jobs:
 
       # Run the Extract Release Notes
       - name: "Extract Release Notes"
+        id: release-notes
         uses: telicent-oss/extract-release-notes-action@v1
         with:
           changelog-file: CHANGELOG.md
           version: 1.2.3 
 
       # Add steps that use the output as necessary e.g.
+      - name: Print the Release Notes
+        run: |
+          cat "${{ steps.release-notes.output.release-notes-file }}
+```
 
+A more advanced usage might look like the following:
+
+```yaml
+name: Advanced Extract Release Notes Example
+on: 
+  push:
+    tags:
+      - '**'
+
+jobs:
+  example:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # Run the Extract Release Notes Action
+      - name: "Extract Release Notes"
+        id: release-notes
+        uses: telicent-oss/extract-release-notes-action@v1
+        with:
+          changelog-file: CHANGELOG.md
+          # Use the tag as the version input
+          version: ${{ github.ref_name }}
+          # Fail the build if no release notes are found for this tag
+          fail-if-missing: true
+          # Add the release notes as GitHub Job Summary content
+          job-summary: true 
+          # Attach the release notes as a build artifact
+          attach-release-notes: true
+
+      # Generate a GitHub release with the release notes
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: ${{ steps.release-notes.outputs.release-notes-file }}
+          generate_release_notes: ${{ steps.release-notes.outputs.auto-release-notes }}
+          name: ${{ github.ref_name }}
 ```
 
 ## Inputs
