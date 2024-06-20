@@ -24,6 +24,8 @@ jobs:
           changelog-file: test-data/simple.md
           version: ${{ matrix.version }}
           fail-if-missing: true
+          attach-release-notes: true
+          summary: true
 
       - name: Print Outputs for Debugging
         run: |
@@ -34,10 +36,6 @@ jobs:
         if: ${{ steps.extract.outputs.release-notes-file == '' }}
         run: |
           exit 1
-
-      - name: Add release notes to job summary
-        run: |
-          cat "${{ steps.extract.outputs.release-notes-file }}" >> "${GITHUB_STEP_SUMMARY}"
 
   simple-fail:
     strategy:
@@ -57,10 +55,45 @@ jobs:
           changelog-file: test-data/simple.md
           version: ${{ matrix.version }}
           fail-if-missing: true
+          summary: false
 
       - name: Verify Release Note Extraction Failed
         if: ${{ steps.extract.outcome == 'success' }}
         run: |
           echo "Release Note Extraction should have failed"
           exit 1
+
+  multi-entry:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract Release Notes
+        id: extract
+        uses: rvesse/extract-release-notes-action@v1
+        with:
+          changelog-file: test-data/multi-entry.md
+          version: 1.0.0
+          fail-if-missing: true
+          attach-release-notes: true
+          summary: true
+
+      - name: Print Outputs for Debugging
+        run: |
+          echo "Release Notes file is ${{ steps.extract.outputs.release-notes-file }}"
+          echo "Auto-Release notes set to ${{ steps.extract.outputs.auto-release-notes }}"
+
+      - name: Fail if no release notes output
+        if: ${{ steps.extract.outputs.release-notes-file == '' }}
+        run: |
+          exit 1
+
+      - name: Fail if wrong release notes extracted
+        run: |
+          grep "Foo" "${{ steps.extract.outputs.release-notes-file }}"
+          if [ $? -ne 0 ]; then
+            echo "Wrong release notes extracted"
+            exit 1
+          fi
 
