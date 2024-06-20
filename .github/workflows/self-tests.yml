@@ -136,5 +136,43 @@ jobs:
             echo "Wrong release notes extracted"
             exit 1
           fi
+        
+  chain-start:
+    runs-on: ubuntu-latest
+    outputs:
+      release-notes-artifact: ${{ steps.extract.outputs.release-notes-artifact }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract Release Notes
+        id: extract
+        uses: telicent-oss/extract-release-notes-action@v1
+        continue-on-error: true
+        with:
+          changelog-file: test-data/simple.md
+          version: 1.2.1
+          fail-if-missing: true
+          job-summary: true
+          attach-release-notes: true
+
+  chain-end:
+    runs-on: ubuntu-latest
+    needs: chain-start
+    steps:
+      - name: Download Extracted Release Notes
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.chain-start.outputs.release-notes-artifact }}
+
+      - name: Ensure a Release Notes file exists
+        run: |
+          if [ ! -f "release-notes.txt" ]; then
+            echo "Expected a release-notes.txt file to have been downloaded"
+            pwd
+            ls -lh
+            exit 1
+          fi
+
 
 
