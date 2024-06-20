@@ -25,7 +25,7 @@ jobs:
           version: ${{ matrix.version }}
           fail-if-missing: true
           attach-release-notes: true
-          summary: true
+          job-summary: true
 
       - name: Print Outputs for Debugging
         run: |
@@ -55,7 +55,7 @@ jobs:
           changelog-file: test-data/simple.md
           version: ${{ matrix.version }}
           fail-if-missing: true
-          summary: false
+          job-summary: false
 
       - name: Verify Release Note Extraction Failed
         if: ${{ steps.extract.outcome == 'success' }}
@@ -77,7 +77,7 @@ jobs:
           version: 1.0.0
           fail-if-missing: true
           attach-release-notes: true
-          summary: true
+          job-summary: true
 
       - name: Print Outputs for Debugging
         run: |
