@@ -129,7 +129,7 @@ runs:
 
     - name: Add Extracted Release Notes as Job Summary
       shell: bash
-      if: ${{ inputs.summary == 'true' }}
+      if: ${{ inputs.job-summary == 'true' }}
       run: |
         cat "${{ steps.changelog.outputs.release-notes-file }}" >> "${GITHUB_STEP_SUMMARY}"
 
