@@ -127,9 +127,15 @@ by some space characters, followed by the specified input `version` and then a n
 
 For example if `version` was set to `1.2.3` then both `# 1.2.3` and `### 1.2.3` would be acceptable, but `## 1.2.3.0`
 would not.  Similarly, if your Change Log file has headers like `### Version 1.2.3` then this won't match either.  As of
-`v1.1` of this action we also support more complex headers of the form `### [1.2.3]<additional content>` where
-`<additional content>` is anything else.  Again your input `version` must appear exactly within the brackets to be
-successfully matched.
+`v1.2` of this action we support version headers of any of the following forms:
+
+- `# 1.2.3`
+- `# 1.2.3 (Some additional content)`
+- `# Version 1.2.3`
+- `# [1.2.3](https://example.org/release/1.2.3) Some additional content`
+
+Basically the provided input `version` **MUST** appear surrounded either by whitespace, or square brackets i.e. `[]`.
+You can see the various example Change Logs in our [`test-data`](test-data/) folder for the various acceptable formats.
 
 Once this line is found it then reads all the subsequent lines until the end of file is reached, or another header line
 of the same level is reached.  This means that you can use subheaders in your Change Log provided that the subheader
