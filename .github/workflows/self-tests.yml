@@ -300,6 +300,32 @@ jobs:
           name: ${{ steps.extract.outputs.release-notes-artifact }}
           path: /tmp/
 
+  named-fail:
+    strategy:
+      matrix:
+        version: [ "1", "1.0", "2.0.0", "0.1.2" ]
+      fail-fast: false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract Release Notes
+        id: extract
+        uses: telicent-oss/extract-release-notes-action@v1
+        continue-on-error: true
+        with:
+          changelog-file: test-data/named.md
+          version: ${{ matrix.version }}
+          fail-if-missing: true
+          job-summary: false
+
+      - name: Verify Release Note Extraction Failed
+        if: ${{ steps.extract.outcome == 'success' }}
+        run: |
+          echo "Release Note Extraction should have failed"
+          exit 1
+
   titled-success:
     strategy:
       matrix:
@@ -336,3 +362,29 @@ jobs:
         with:
           name: ${{ steps.extract.outputs.release-notes-artifact }}
           path: /tmp/
+
+  titled-fail:
+    strategy:
+      matrix:
+        version: [ "1", "1.0", "2.0.0", "0.1.2" ]
+      fail-fast: false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract Release Notes
+        id: extract
+        uses: telicent-oss/extract-release-notes-action@v1
+        continue-on-error: true
+        with:
+          changelog-file: test-data/titled.md
+          version: ${{ matrix.version }}
+          fail-if-missing: true
+          job-summary: false
+
+      - name: Verify Release Note Extraction Failed
+        if: ${{ steps.extract.outcome == 'success' }}
+        run: |
+          echo "Release Note Extraction should have failed"
+          exit 1
