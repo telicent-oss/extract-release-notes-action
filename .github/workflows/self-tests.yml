@@ -314,7 +314,7 @@ jobs:
         id: extract
         uses: telicent-oss/extract-release-notes-action@v1
         with:
-          changelog-file: test-data/named.md
+          changelog-file: test-data/titled.md
           version: ${{ matrix.version }}
           fail-if-missing: true
           attach-release-notes: true

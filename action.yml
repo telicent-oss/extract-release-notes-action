@@ -93,7 +93,7 @@ runs:
               fi
             fi
             echo "${LINE}" >> ${{ inputs.release-notes-file }}
-          elif echo "${LINE}" | grep -E "#+[[:space:]]+.*([[]${MATCH_RELEASE}[]]|${MATCH_RELEASE}[[:space:]]).*\$" >/dev/null 2>&1; then
+          elif echo "${LINE}" | grep -E "#+.*([[]${MATCH_RELEASE}[]].*|[[:space:]]+${MATCH_RELEASE}[[:space:]].*|[[:space:]]+${MATCH_RELEASE}\$)" >/dev/null 2>&1; then
             STARTED=1
             HEADER=$(echo "${LINE}" | awk '{print $1}')
             echo "# Version ${RELEASE}" >> ${{ inputs.release-notes-file }}
